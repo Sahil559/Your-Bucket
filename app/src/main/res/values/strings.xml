@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">BucketList</string>
+    <string name="edit_bucket">Update Bucket\n</string>
+    <string name="add_bucket">Add Bucket\n</string>
+
+</resources>

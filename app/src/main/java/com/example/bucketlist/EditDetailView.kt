@@ -1,0 +1,168 @@
+package com.example.bucketlist
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.rememberScaffoldState
+
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Blue
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.bucketlist.R.color.purple_200
+import com.example.bucketlist.data.Bucket
+import kotlinx.coroutines.launch
+
+@SuppressLint("ResourceAsColor")
+@Composable
+fun EditDetailView(
+    id: Long,
+    viewModel: BucketViewModel,
+    navController: NavController
+){
+
+    val snakeMessage= remember{ mutableStateOf("") }
+    val scope= rememberCoroutineScope()
+    val scaffoldState= rememberScaffoldState()
+
+
+    Scaffold(topBar = {AppBarView(title =
+    if(id != 0L) stringResource(id = R.string.edit_bucket)
+    else stringResource(id = R.string.add_bucket)
+    )
+    {navController.navigateUp()}
+    },
+        backgroundColor = Color.Cyan,
+        scaffoldState=scaffoldState
+        ) {
+        Column(modifier = Modifier
+            .padding(it)
+            .wrapContentSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ){
+            Spacer(modifier = Modifier.height(50.dp))
+
+            TextField(label = "Add Your Bucket",
+                value = viewModel.titleState,
+                onValueChanged = {
+                    viewModel.onTitleChange(it)
+                } )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            TextField(label = "Add Description",
+                value = viewModel.descState,
+                onValueChanged = {
+                    viewModel.onDescChange(it)
+                } )
+
+            Spacer(modifier = Modifier.height(50.dp))
+            Button(
+                onClick = {
+                    if (viewModel.titleState.isNotEmpty()) {
+                        if (id != 0L) {
+                            viewModel.updateBucket(
+                                Bucket(
+                                    id = id,
+                                    title = viewModel.titleState.trim(),
+                                    desc = viewModel.descState.trim(),
+                                ),
+                            )
+                        } else {
+                            viewModel.addBucket(
+                                Bucket(
+                                    title = viewModel.titleState.trim(),
+                                    desc = viewModel.descState.trim(),
+                                ),
+                            )
+                            snakeMessage.value = "Bucket Added Successfully"
+                        }
+                        scope.launch {
+                            scaffoldState.snackbarHostState.showSnackbar(snakeMessage.value)
+                            navController.navigateUp()
+                        }
+                    } else {
+                        snakeMessage.value = "Enter Fields"
+                        scope.launch {
+                            scaffoldState.snackbarHostState.showSnackbar(snakeMessage.value)
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(40.dp),
+                shape = RoundedCornerShape(30.dp),
+                elevation = ButtonDefaults.elevation(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = Color(purple_200),
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = if (id != 0L) stringResource(id = R.string.edit_bucket)
+                    else stringResource(id = R.string.add_bucket),
+                    style = MaterialTheme.typography.button,
+                    color = White
+                )
+            }
+
+        }
+    }
+
+}
+
+
+@Composable
+fun TextField(
+    label: String,
+    value: String,
+    onValueChanged: (String) -> Unit
+){
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChanged,
+        label = { Text(text = label, color = Color.Black) },
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            textColor = Color.Black,
+            focusedBorderColor = colorResource(id = R.color.black),
+            unfocusedBorderColor = colorResource(id = R.color.black),
+            cursorColor = colorResource(id = R.color.black),
+            focusedLabelColor = colorResource(id = R.color.black),
+            unfocusedLabelColor = colorResource(id = R.color.black),
+        )
+
+
+    )
+}
+
